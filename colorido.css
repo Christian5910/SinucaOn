@@ -1,0 +1,580 @@
+/* ==========================================================================
+   SinucaON! - colorido.css (o visual do jogo; o menu, os modais e o tema ficam no on.css)
+
+   Índice
+   1. Variáveis e layout
+   2. Botão da partida e placar
+   3. A mesa (canvas) e os controles de mira, força e efeito
+   4. Tela sobre a mesa (decisões e resultado)
+   5. Ajudas, nova partida e Como Jogar
+   6. Modo escuro
+   7. Responsividade
+   ========================================================================== */
+   ========================================================================== */
+
+:root {
+    --mesa-borda: rgba(144, 202, 249, 0.3);
+    --mesa-fundo: rgba(6, 47, 81, 0.45);
+    --rw: 20px;
+    --hw: 30px;
+    --feltro: #1f7a45;
+    --madeira: #6d4423;
+    --madeira-2: #4a2d16;
+}
+
+html[data-tema="escuro"] {
+    --mesa-fundo: rgba(3, 12, 24, 0.7);
+    --feltro: #17532f;
+    --madeira: #3d2714;
+    --madeira-2: #261808;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10px 6px 4px;
+}
+
+#game-area {
+    width: 100%;
+    max-width: 1240px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    min-width: 0;
+}
+
+/* ==========================================================================
+   2. Botão da partida e placar
+   ========================================================================== */
+#modo-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 56px;
+    padding: 6px 12px 6px 8px;
+    border-radius: 12px;
+    border: 2px solid var(--mesa-borda);
+    background: var(--mesa-fundo);
+    color: var(--light-blue);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+#modo-btn:active { transform: scale(0.99); }
+#modo-btn:focus-visible { outline: 3px solid var(--accent-blue); outline-offset: 2px; }
+
+#modo-mini { flex-shrink: 0; display: flex; align-items: center; width: 46px; height: 46px; }
+#modo-mini .mini { display: block; width: 100%; height: auto; border-radius: 4px; }
+
+.modo-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+
+.nivel-rotulo {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #bcdcf7;
+}
+
+#modo-nome { color: #fff; font-size: 1.1rem; line-height: 1.15; overflow-wrap: break-word; }
+#modo-sub { font-size: 0.8rem; color: var(--light-blue); line-height: 1.25; overflow-wrap: anywhere; }
+
+.modo-trocar {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--light-blue);
+}
+
+#hud { display: flex; gap: 8px; }
+#hud-v1, #hud-v2, #hud-v3 { overflow-wrap: normal; white-space: nowrap; }
+#hud-v2 { font-size: 0.92rem; }
+
+
+.hud-box {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    border: 2px solid var(--mesa-borda);
+    background: var(--mesa-fundo);
+    min-height: 54px;
+    color: inherit;
+    font: inherit;
+}
+
+.hud-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #d3e9fc;
+    max-width: 100%;
+    text-align: center;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.hud-box b {
+    font-size: 1.2rem;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    max-width: 100%;
+    text-align: center;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+
+.hud-box b { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.hud-box b svg { flex-shrink: 0; }
+
+
+#painel-acao { display: flex; flex-direction: column; gap: 8px; }
+#painel-acao:empty { display: none; }
+.ferramentas { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; }
+.ferramentas .btn { flex: 1 1 140px; }
+.ferramentas .btn[hidden], .tool-btn[hidden] { display: none; }
+#entrada .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.par-btns { display: flex; gap: 8px; }
+.par-btns .btn { flex: 1; }
+
+.tool-btn {
+    flex: 1 1 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-height: 46px;
+    padding: 4px 8px 3px;
+    background: rgba(227, 242, 253, 0.1);
+    border: 2px solid rgba(144, 202, 249, 0.5);
+    color: var(--light-blue);
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 800;
+    font-size: 0.85rem;
+    line-height: 1.1;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.tool-btn small { font-size: 0.72rem; font-weight: 700; color: #bcdcf7; }
+.tool-btn:active:not(:disabled) { background: rgba(227, 242, 253, 0.22); transform: scale(0.97); }
+.tool-btn:focus-visible { outline: 3px solid var(--accent-blue); outline-offset: 2px; }
+.tool-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+#message-container { min-height: 24px; display: flex; align-items: center; justify-content: center; }
+#message-area { text-align: center; font-weight: 700; font-size: 0.92rem; line-height: 1.35; color: var(--light-blue); }
+
+#placar { display: flex; flex-direction: column; gap: 10px; }
+.grupo-frota { display: flex; flex-direction: column; gap: 4px; }
+.grupo-tit { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #bcdcf7; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-j {
+    flex: 1 1 140px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 9px;
+    border-radius: 10px;
+    border: 2px solid var(--mesa-borda);
+    background: var(--mesa-fundo);
+    min-width: 0;
+}
+.chip-j.vez { border-color: #ffd54f; background: rgba(255, 213, 79, 0.14); }
+.chip-j.morto { opacity: 0.5; }
+.chip-j.morto b { text-decoration: line-through; }
+.chip-j b { font-size: 0.85rem; color: #fff; overflow-wrap: anywhere; line-height: 1.15; }
+.chip-j small { font-size: 0.75rem; color: var(--light-blue); line-height: 1.25; font-variant-numeric: tabular-nums; }
+#diario { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; max-height: 190px; overflow-y: auto; }
+#diario li { font-size: 0.82rem; line-height: 1.3; color: var(--light-blue); padding-left: 10px; border-left: 3px solid rgba(144, 202, 249, 0.35); }
+#diario li.rua { color: #ffe082; border-left-color: #ffd54f; font-weight: 700; }
+#diario li.vazio { opacity: 0.7; }
+#restart-btn { margin-bottom: 0; }
+#config { padding: 0 0 12px; display: flex; flex-direction: column; gap: 8px; }
+
+/* ==========================================================================
+   5. Tela sobre a mesa (passar o aparelho, resultado)
+   ========================================================================== */
+#tela {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    overflow-y: auto;
+    background: rgba(6, 30, 56, 0.6);
+    animation: aparece 0.35s var(--ease);
+}
+
+#tela.opaca { background: #08233b; }
+#tela[hidden] { display: none; }
+
+@keyframes aparece { from { opacity: 0; } to { opacity: 1; } }
+
+.tela-card {
+    width: min(100%, 380px);
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    padding: 16px 14px 14px;
+    border-radius: 14px;
+    border: 2px solid rgba(144, 202, 249, 0.6);
+    background: #0a2a47;
+    color: #fff;
+}
+
+.tela-card h2 { margin: 0; font-size: 1.4rem; }
+.tela-card p { margin: 0; font-size: 0.95rem; color: var(--light-blue); line-height: 1.45; }
+.tela-card .btn { margin-top: 4px; width: 100%; }
+.tela-card .btn[hidden] { display: none; }
+.tela-card .btn-secondary { color: var(--light-blue); }
+.tela-sub { font-size: 0.85rem !important; }
+
+.res { width: 100%; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.res-motivo { text-align: center; font-weight: 700; }
+
+.res-lin {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0 8px;
+    padding: 5px 10px;
+    border-radius: 10px;
+    background: rgba(144, 202, 249, 0.1);
+    border: 1px solid rgba(144, 202, 249, 0.3);
+    color: var(--light-blue);
+    font-size: 0.92rem;
+}
+
+.res-lin b { color: #fff; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.res-lin small { grid-column: 1 / -1; color: #ffe082; font-size: 0.8rem; line-height: 1.35; font-weight: 700; }
+
+   ========================================================================== */
+#ajuda-btn .opc-txt { margin-right: auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; flex: 1; text-align: left; }
+#ajuda-btn .opc-txt b { color: #fff; font-size: 1.02rem; line-height: 1.2; }
+.acc-panel > div { padding-top: 4px; }
+.linha-cfg + .linha-cfg { margin-top: 8px; }
+.linha-cfg { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; }
+
+.rotulo-cfg {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #bcdcf7;
+    flex-shrink: 0;
+}
+
+.seg { display: flex; gap: 4px; flex: 1; max-width: 360px; }
+.seg-niveis, .seg-wrap { flex-wrap: wrap; max-width: none; }
+.seg-niveis .seg-btn { flex: 1 1 120px; }
+.seg-wrap .seg-btn { flex: 1 1 110px; }
+
+.seg-btn {
+    flex: 1;
+    background: rgba(227, 242, 253, 0.1);
+    border: 2px solid rgba(144, 202, 249, 0.5);
+    color: var(--light-blue);
+    padding: 6px;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    min-height: 40px;
+    min-width: 0;
+}
+
+.seg-btn:active:not(:disabled) { background: rgba(227, 242, 253, 0.2); transform: scale(0.96); }
+.seg-btn[aria-pressed="true"] { background: #1976d2; border-color: rgba(144, 202, 249, 0.9); color: #fff; }
+.seg-btn:focus-visible { outline: 3px solid var(--accent-blue); outline-offset: 2px; }
+
+#ajuda-aviso { margin: 10px 0 0; font-size: 0.8rem; color: #bcdcf7; }
+
+/* modal: escolher partida */
+.sec-tit { margin: 0 0 6px; font-size: 0.95rem; }
+.sec-tit:not(:first-child) { margin-top: 16px; }
+#bloco-nivel[hidden] { display: none; }
+#bloco-nivel .sec-tit { margin-top: 16px; }
+.nivel-nome { margin: 8px 0 0; font-size: 0.85rem; color: var(--modal-sub); line-height: 1.4; }
+.nivel-nome:empty { display: none; }
+.modal-body .seg-btn { background: rgba(13, 60, 117, 0.06); border-color: var(--modal-line); color: var(--modal-title); }
+.modal-body .seg-btn[aria-pressed="true"] { background: #1976d2; border-color: #1976d2; color: #fff; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 8px; }
+
+.tile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px 8px 8px;
+    text-align: left;
+    font: inherit;
+    color: var(--modal-text);
+    background: rgba(13, 60, 117, 0.05);
+    border: 2px solid var(--modal-line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.tile:active { transform: scale(0.985); }
+.tile:focus-visible { outline: 3px solid var(--accent-blue); outline-offset: 2px; }
+.tile[aria-current="true"] { border-color: #1976d2; background: rgba(25, 118, 210, 0.12); }
+.tile-mini { flex-shrink: 0; width: 56px; height: 56px; display: block; }
+.tile-mini .mini { display: block; width: 100%; height: 100%; }
+.tile-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.tile-nome { font-weight: 800; font-size: 1rem; color: var(--modal-title); overflow-wrap: anywhere; line-height: 1.15; }
+.tile-dif { font-size: 0.78rem; font-weight: 700; color: var(--modal-sub); }
+.tile-desc { font-size: 0.82rem; line-height: 1.3; color: var(--modal-text); }
+
+/* Como Jogar */
+.abas { display: flex; gap: 6px; padding: 10px 24px 0; border-bottom: 1px solid var(--modal-line); }
+
+.aba {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 8px;
+    border: 2px solid var(--modal-line);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    background: transparent;
+    color: var(--modal-sub);
+    font: inherit;
+    font-weight: 800;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.aba[aria-selected="true"] { background: #1976d2; border-color: #1976d2; color: #fff; }
+.aba:focus-visible { outline: 3px solid var(--accent-blue); outline-offset: 2px; }
+.modal-body[hidden] { display: none; }
+
+.texto-ajuda h3 { margin: 16px 0 4px; font-size: 1.05rem; }
+.texto-ajuda h3:first-child { margin-top: 0; }
+.texto-ajuda h4 { margin: 12px 0 2px; font-size: 0.95rem; }
+.texto-ajuda ul, .texto-ajuda ol { padding-left: 1.2em; }
+.texto-ajuda li + li { margin-top: 4px; }
+
+
+/* formulários (nova partida, jogadores, blinds) */
+.campo { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.campo label, .campo .rotulo { font-size: 0.8rem; font-weight: 800; color: var(--modal-sub); }
+.modal-body input[type="text"], .modal-body input[type="number"], .modal-body select {
+    width: 100%;
+    min-height: 42px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 2px solid var(--modal-line);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--modal-text);
+    font: inherit;
+    font-size: 1rem;
+}
+html[data-tema="escuro"] .modal-body input[type="text"], html[data-tema="escuro"] .modal-body input[type="number"], html[data-tema="escuro"] .modal-body select { background: rgba(3, 12, 24, 0.55); }
+.modal-body input:focus-visible, .modal-body select:focus-visible { outline: 3px solid #1976d2; outline-offset: 1px; }
+.campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 120px), 1fr)); gap: 8px; }
+.nomes-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr)); gap: 8px; }
+
+.mini-btn {
+    min-width: 44px; min-height: 44px; border-radius: 10px; border: 2px solid var(--modal-line);
+    background: rgba(13, 60, 117, 0.06); color: var(--modal-title); font: inherit; font-weight: 800; font-size: 1.3rem; line-height: 1; cursor: pointer;
+}
+.mini-btn:active:not(:disabled) { transform: scale(0.95); }
+.mini-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.mini-btn:focus-visible { outline: 3px solid #1976d2; outline-offset: 2px; }
+.aviso-modal { margin: 0; font-size: 0.85rem; line-height: 1.4; color: var(--modal-sub); }
+.aviso-modal.erro { color: #c62828; font-weight: 700; }
+html[data-tema="escuro"] .aviso-modal.erro { color: #ff8a80; }
+
+
+/* ==========================================================================
+   7. Modo escuro
+   ========================================================================== */
+html[data-tema="escuro"] .tile { background: rgba(144, 202, 249, 0.07); }
+html[data-tema="escuro"] .tile[aria-current="true"] { background: rgba(25, 118, 210, 0.3); }
+html[data-tema="escuro"] .modal-body .seg-btn { background: rgba(144, 202, 249, 0.08); }
+
+/* ==========================================================================
+   3. A mesa (canvas) e os controles de mira, força e efeito
+   ========================================================================== */
+#taco { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 4; }
+main { overflow-x: clip; }
+#mesa-box { position: relative; width: 100%; max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+#mesa { display: block; max-width: 100%; border-radius: 10px; box-shadow: 0 0 0 2px var(--madeira-2); touch-action: none; cursor: crosshair; background: var(--madeira-2); }
+#mesa:focus-visible { outline: 3px solid var(--accent-blue); outline-offset: 3px; }
+#painel-acao.inativo { opacity: 0.55; }
+#painel-acao[hidden] { display: none; }
+.linha-mira, .linha-forca { display: flex; align-items: center; gap: 8px; }
+.slider-rot { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.slider-rot .rotulo-cfg b { color: #fff; margin-left: 4px; text-transform: none; letter-spacing: 0; font-size: 0.85rem; }
+.slider-rot input[type="range"] { width: 100%; min-height: 32px; accent-color: #64b5f6; margin: 0; }
+.mira-btn { min-width: 44px; min-height: 44px; background: rgba(227, 242, 253, 0.1); border-color: rgba(144, 202, 249, 0.5); color: var(--light-blue); }
+.linha-forca .tool-btn { flex: 0 0 92px; }
+#tacar-btn { width: 100%; min-height: 52px; font-size: 1.1rem; }
+#empurrar-btn.ligado { box-shadow: inset 0 0 0 3px #ffd54f; }
+#dica { margin: 0; font-size: 0.88rem; font-weight: 700; color: var(--light-blue); line-height: 1.35; min-height: 1.2em; }
+#efeito-caixa { display: flex; justify-content: center; padding: 6px 0; }
+#efeito-cv { width: min(220px, 100%); height: auto; touch-action: none; cursor: crosshair; border-radius: 50%; }
+.res-lin { margin-top: 4px; }
+.tela-card .btn[hidden] { display: none; }
+
+/* ==========================================================================
+   8. Responsividade
+   ========================================================================== */
+@media (hover: hover) {
+    .seg-btn:hover:not(:disabled), .tool-btn:hover:not(:disabled), #modo-btn:hover, .mini-btn:hover:not(:disabled) {
+        background: rgba(227, 242, 253, 0.2);
+        border-color: rgba(144, 202, 249, 0.85);
+    }
+    .seg-btn[aria-pressed="true"]:hover:not(:disabled) { background: #1976d2; }
+    .modal-body .seg-btn:hover:not(:disabled) { background: rgba(25, 118, 210, 0.14); }
+    .modal-body .seg-btn[aria-pressed="true"]:hover:not(:disabled) { background: #1976d2; }
+    .tile:hover { border-color: #1976d2; }
+}
+
+/* Retrato: painel de ação grudado no fim da tela */
+@media not all and (orientation: landscape) and (min-width: 540px) {
+    #entrada { position: sticky; bottom: 0; z-index: 30; padding: 8px 8px calc(8px + var(--safe-area-inset-bottom)); margin: 0 -2px; background: var(--dark-blue); border-top: 1px solid rgba(144, 202, 249, 0.4); border-radius: 12px 12px 0 0; }
+    html[data-tema="escuro"] #entrada { background: #05182b; }
+    /* janela baixa demais para mesa + painel: o painel deixa de ser fixo e passa a rolar com a página */
+    #game-area[data-fluxo="livre"] #entrada { position: static; border-radius: 12px; margin: 0; }
+}
+@media (max-width: 340px) {
+    #entrada { padding-top: 6px; gap: 4px; }
+    #dica { font-size: 0.8rem; line-height: 1.25; }
+    #tacar-btn { min-height: 46px; }
+    .mira-btn { min-width: 40px; min-height: 40px; }
+    .ferramentas .btn, .tool-btn { min-height: 40px; }
+}
+
+/* Tela deitada e computador: a mesa ocupa a largura toda (palco) ou fica ao lado dos controles (compacto). O JS põe data-lay no #game-area. */
+@media (orientation: landscape) and (min-width: 540px) {
+    main { padding: 8px 10px 6px; }
+    #game-area { display: grid; align-items: start; row-gap: 8px; column-gap: 10px; }
+    #config { padding-bottom: 0; }
+    .modo-trocar { display: none; }
+    #message-area:not(:empty) { background: rgba(4, 22, 40, 0.9); border: 1px solid rgba(144, 202, 249, 0.55); border-radius: 10px; padding: 5px 12px; max-width: min(92%, 620px); font-size: 0.85rem; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45); }
+    #message-container { pointer-events: none; z-index: 6; min-height: 0; }
+    #message-area { transition: opacity 0.5s ease; }
+    #message-area.some { opacity: 0; }
+    #mesa { border-radius: 16px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.4); }
+}
+
+#game-area[data-lay="palco"] { grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); }
+#game-area[data-lay="palco"] #modo-btn { grid-column: 1; grid-row: 1; min-height: 52px; gap: 8px; padding: 5px 8px 5px 6px; }
+#game-area[data-lay="palco"] #modo-mini { width: 38px; height: 38px; }
+#game-area[data-lay="palco"] #modo-nome { font-size: 0.98rem; }
+#game-area[data-lay="palco"] #hud { grid-column: 2; grid-row: 1; display: flex; gap: 8px; }
+#game-area[data-lay="palco"] .hud-box { min-height: 52px; padding: 3px 6px; }
+#game-area[data-lay="palco"] .hud-box b { font-size: 1.08rem; }
+#game-area[data-lay="palco"] #mesa-box { grid-column: 1 / -1; grid-row: 2; }
+#game-area[data-lay="palco"] #message-container { grid-column: 1 / -1; grid-row: 2; align-self: end; justify-self: center; margin-bottom: 9%; }
+#game-area[data-lay="palco"] #entrada { grid-column: 1 / -1; grid-row: 3; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; padding: 8px 12px; background: rgba(4, 22, 40, 0.55); border: 2px solid var(--mesa-borda); border-radius: 14px; }
+#game-area[data-lay="palco"] #dica { grid-column: 1 / -1; margin: 0; font-size: 0.9rem; }
+#game-area[data-lay="palco"] #painel-acao { grid-column: 1; flex-direction: row; align-items: flex-end; gap: 16px; }
+#game-area[data-lay="palco"] .linha-mira { flex: 1 1 250px; }
+#game-area[data-lay="palco"] .linha-forca { flex: 1.15 1 290px; }
+#game-area[data-lay="palco"] .par-btns { flex: 0 0 170px; }
+#game-area[data-lay="palco"] .ferramentas { grid-column: 2; flex-direction: column; }
+#game-area[data-lay="palco"] .ferramentas .btn, #game-area[data-lay="palco"] .tool-btn { flex-basis: auto; }
+#game-area[data-lay="palco"] #placar { grid-column: 1 / -1; grid-row: 4; flex-direction: row; gap: 18px; }
+#game-area[data-lay="palco"] #placar .grupo-frota { flex: 1; min-width: 0; }
+#game-area[data-lay="palco"] #restart-btn { grid-column: 1; grid-row: 5; }
+#game-area[data-lay="palco"] #config { grid-column: 2; grid-row: 5; max-width: 460px; }
+
+#game-area[data-lay="compacto"] { grid-template-columns: minmax(0, 1fr) 196px; column-gap: 8px; row-gap: 5px; }
+#game-area[data-lay="compacto"] #mesa-box { grid-column: 1; grid-row: 1 / 5; position: sticky; top: calc(var(--header-height, 48px) + 4px); align-self: start; justify-self: center; }
+#game-area[data-lay="compacto"] #message-container { grid-column: 1; grid-row: 1 / 5; align-self: end; justify-self: center; margin-bottom: 14%; }
+#game-area[data-lay="compacto"] #modo-btn { grid-column: 2; grid-row: 1; min-height: 38px; gap: 6px; padding: 3px 6px 3px 5px; }
+#game-area[data-lay="compacto"] #modo-mini { width: 28px; height: 28px; }
+#game-area[data-lay="compacto"] .nivel-rotulo, #game-area[data-lay="compacto"] #modo-sub { display: none; }
+#game-area[data-lay="compacto"] #modo-nome { font-size: 0.85rem; }
+#game-area[data-lay="compacto"] #hud { grid-column: 2; grid-row: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+#game-area[data-lay="compacto"] .hud-box { min-height: 36px; padding: 2px 3px; border-width: 1px; gap: 0; }
+#game-area[data-lay="compacto"] .hud-box b { font-size: 0.92rem; }
+#game-area[data-lay="compacto"] .hud-label { font-size: 0.6875rem; letter-spacing: 0; text-transform: none; }
+#game-area[data-lay="compacto"] #entrada { grid-column: 2; grid-row: 3; display: flex; flex-direction: column; gap: 4px; }
+#game-area[data-lay="compacto"] #dica { margin: 0; font-size: 0.75rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+#game-area[data-lay="compacto"] #painel-acao { gap: 3px; }
+#game-area[data-lay="compacto"] .mira-btn { min-width: 36px; min-height: 36px; }
+#game-area[data-lay="compacto"] .slider-rot input[type="range"] { min-height: 26px; }
+#game-area[data-lay="compacto"] .tool-btn { min-height: 36px; flex-basis: auto; padding: 2px 6px; font-size: 0.78rem; }
+#game-area[data-lay="compacto"] #tacar-btn { min-height: 40px; padding: 4px 8px; }
+#game-area[data-lay="compacto"] .ferramentas .btn, #game-area[data-lay="compacto"] .ferramentas .tool-btn { flex-basis: 100%; }
+#game-area[data-lay="compacto"] #placar { grid-column: 1 / -1; grid-row: 5; flex-direction: row; gap: 14px; }
+#game-area[data-lay="compacto"] #placar .grupo-frota { flex: 1; min-width: 0; }
+#game-area[data-lay="compacto"] #restart-btn { grid-column: 1 / -1; grid-row: 6; }
+#game-area[data-lay="compacto"] #config { grid-column: 1 / -1; grid-row: 7; }
+
+@media (orientation: landscape) and (max-height: 559px) {
+    :root { --header-height: 48px; }
+    header h1 { font-size: 1.15rem; }
+    .hud-label { font-size: 0.6875rem; text-transform: none; }
+    .tela-card { padding: 10px 12px; gap: 5px; }
+    .tela-card h2 { font-size: 1.15rem; }
+    .tela-card p { font-size: 0.85rem; line-height: 1.35; }
+    #tela { padding: 6px; }
+    .tool-btn { min-height: 40px; }
+}
+
+@media (max-width: 420px) {
+    main { padding: 8px 4px 4px; }
+    .rotulo-cfg { font-size: 0.72rem; }
+    .seg-btn { font-size: 0.8rem; padding: 4px 2px; }
+    .hud-box b { font-size: 1.05rem; }
+    .abas { padding: 8px 14px 0; gap: 4px; }
+    .aba { font-size: 0.8rem; padding: 9px 4px; }
+    .seg { max-width: none; }
+}
+
+@media (max-width: 300px) {
+    header { padding: 0 8px; gap: 6px; }
+    header h1 { font-size: 1.12rem; }
+    #modo-btn { gap: 8px; padding: 6px 8px 6px 6px; }
+    #modo-mini { width: 40px; height: 40px; }
+    #modo-nome { font-size: 1rem; }
+    .trocar-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .hud-box { padding: 6px 8px; min-height: 46px; }
+    .hud-label { font-size: 0.6875rem; letter-spacing: 0; text-transform: none; }
+    .hud-box b { font-size: 0.9rem; }
+    #hud { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; }
+    .tile { flex-direction: column; align-items: flex-start; padding: 8px; gap: 6px; }
+    .tile-txt { width: 100%; }
+    .abas { padding: 8px 8px 0; gap: 4px; }
+    .aba { font-size: 0.72rem; padding: 8px 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #tela { animation: none; }
+}
+html[data-reduzir="1"] #tela { animation: none; }
+
+/* botões de ação sobre fundo escuro */
+#painel-acao .botoes .btn-secondary, .tela-card .btn-secondary { background: rgba(227, 242, 253, 0.12); border: 2px solid rgba(144, 202, 249, 0.75); color: #fff; }
+#painel-acao .botoes .btn-secondary:active { background: rgba(227, 242, 253, 0.25); }

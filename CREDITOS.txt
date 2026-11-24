@@ -1,0 +1,37 @@
+SinucaON! - créditos de terceiros
+
+FÍSICA (fisica.js, mesa.js)
+O código do motor é próprio. Constantes de bolas, pano e tabelas e as equações de referência seguem:
+- pooltool (Evan Kiefl), Apache-2.0. https://github.com/ekiefl/pooltool
+  Usado para: constantes físicas (massa e raio da bola, coeficientes de atrito e de restituição, dimensões das mesas e das caçapas).
+- Leckie, W. e Greenspan, M. (2006). "An event-based pool physics simulator". Advances in Computer Games.
+  Usado para: o modelo por eventos (estados parada, girando, rolando e deslizando, e o instante dos choques).
+- Han, I. (2005). "Dynamics in carom and three cushion billiards". Journal of Mechanical Science and Technology.
+  Usado para: o modelo de choque da bola com a tabela.
+- Alciatore, D. G. "Pool and Billiards Physics Principles" (Universidade do Estado do Colorado). https://billiards.colostate.edu/
+  Usado para: o atrito entre bolas no choque e o impulso do taco.
+- Mathavan, S., Jackson, M. R. e Parkin, R. M. (2009 e 2010). Estudos sobre o choque da bola com o pano e com a tabela.
+  Usado para: a referência das equações de choque e de atrito da bola com o pano e com a tabela.
+
+REGRAS (regras-brasileira.js, regras-pool.js, regras-snooker.js)
+Escritas a partir das regras publicadas pela AMB para a Sinuca Brasileira,
+pela World Professional Billiards and Snooker Association (WPBSA) para o Snooker e pela World Pool-Billiard Association (WPA) para Bola 8 e Bola 9.
+As regras são resumidas e reescritas com palavras próprias; nenhum texto oficial foi copiado.
+
+PROJETO NÃO REUTILIZADO
+O simulador "tailuge/billiards" (GPL-3.0) foi estudado, mas nenhum código foi copiado, para não impor a licença GPL ao jogo.
+
+ÍCONES DO APP (assets/)
+Fonte: DejaVu Sans Bold, parte da Bitstream Vera (© 2003 Bitstream, Inc.). A licença permite uso gratuito, inclusive
+comercial; as mudanças do DejaVu são de domínio público. Origem: https://dejavu-fonts.github.io/
+
+O jogo não tem partida online pela internet.
+
+TEXTURAS DA MESA E DAS BOLAS (assets/tex/)
+- Texturas das bolas numeradas (b1 a b15, mapas equiretangulares) e do couro das caçapas (couro.jpg): vêm do repositório pooltool
+  (Evan Kiefl), licença Apache-2.0, https://github.com/ekiefl/pooltool. Reduzidas para 512x256 e compostas sobre fundo branco.
+  O repositório não traz um aviso próprio de origem para essas imagens; elas seguem a licença do projeto.
+- Madeira (madeira.jpg, a partir de "Wood 048") e trama do feltro (pano.jpg, a partir de "Fabric 059", em tons de cinza):
+  ambientCG, licença CC0 (domínio público), https://ambientcg.com/. A cor do feltro e o tom da madeira são aplicados pelo código.
+- O sombreamento das bolas (luz, brilho, reflexo e sombra), a moldura, as almofadas, as caçapas, os losangos e o taco são desenhados
+  pelo próprio jogo, sem imagens de terceiros.

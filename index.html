@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SinucaON!</title>
+  <meta name="description" content="SinucaON!: sinuca brasileira, snooker, bola 8 e bola 9 no navegador, com física realista, contra o robô ou a dois. Grátis e funciona offline." />
+  <meta name="theme-color" content="#0d3c75" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <script>/* aplica tema e animações antes de pintar (evita "piscar") */
+  try{var c={};try{c=JSON.parse(localStorage.getItem('sinucaon.cfg')||'{}')||{}}catch(e){}var d=document.documentElement,r=c.reduzir,t=c.tema;
+  if(t!=='escuro'&&t!=='claro')t=c.escuro===true?'escuro':null;
+  if(r===undefined||r===null)r=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(t?t==='escuro':matchMedia('(prefers-color-scheme: dark)').matches)d.setAttribute('data-tema','escuro');if(r)d.setAttribute('data-reduzir','1');}catch(e){}</script>
+  <link rel="stylesheet" href="on.css" />
+  <link rel="stylesheet" href="colorido.css" />
+  <script defer src="on.js"></script>
+  <script defer src="sorteio.js"></script>
+  <script defer src="fisica.js"></script>
+  <script defer src="mesa.js"></script>
+  <script defer src="jogo.js"></script>
+  <script defer src="regras-brasileira.js"></script>
+  <script defer src="regras-pool.js"></script>
+  <script defer src="regras-snooker.js"></script>
+  <script defer src="bot.js"></script>
+  <script defer src="textos.js"></script>
+  <script defer src="javinhas.js"></script>
+</head>
+<body>
+  <header>
+    <button id="menu-btn" type="button" aria-label="Abrir menu" aria-controls="drawer" data-abrir="drawer">☰</button>
+    <h1>SinucaON!</h1>
+    <button id="howto-btn" class="header-btn" type="button" aria-haspopup="dialog" data-abrir="howto-modal">Como Jogar</button>
+  </header>
+
+  <div id="overlay" hidden></div>
+
+  <!-- Modal "Como Jogar" -->
+  <div id="howto-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="howto-title">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h2 id="howto-title">Como Jogar SinucaON!</h2>
+        <button class="modal-x" type="button" aria-label="Fechar" data-fechar>✕</button>
+      </div>
+      <div class="abas" role="tablist" aria-label="Seções da ajuda">
+        <button class="aba" id="aba-site" type="button" role="tab" aria-selected="true" aria-controls="painel-site">O site</button>
+        <button class="aba" id="aba-regras" type="button" role="tab" aria-selected="false" aria-controls="painel-regras" tabindex="-1">Regras</button>
+        <button class="aba" id="aba-fisica" type="button" role="tab" aria-selected="false" aria-controls="painel-fisica" tabindex="-1">A física</button>
+        <button class="aba" id="aba-dicas" type="button" role="tab" aria-selected="false" aria-controls="painel-dicas" tabindex="-1">Dicas</button>
+      </div>
+      <div class="modal-body texto-ajuda" id="painel-site" role="tabpanel" aria-labelledby="aba-site"></div>
+      <div class="modal-body texto-ajuda" id="painel-regras" role="tabpanel" aria-labelledby="aba-regras" hidden></div>
+      <div class="modal-body texto-ajuda" id="painel-fisica" role="tabpanel" aria-labelledby="aba-fisica" hidden></div>
+      <div class="modal-body texto-ajuda" id="painel-dicas" role="tabpanel" aria-labelledby="aba-dicas" hidden></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" type="button" data-fechar data-foco>Entendi!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal "Nova partida" -->
+  <div id="partida-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="partida-title">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h2 id="partida-title">Nova partida</h2>
+        <button class="modal-x" type="button" aria-label="Fechar" data-fechar>✕</button>
+      </div>
+      <div class="modal-body" id="partida-corpo">
+        <h3 class="sec-tit" id="sec-modo">Jogo</h3>
+        <div class="tiles" id="tiles-modo" role="group" aria-labelledby="sec-modo"></div>
+        <h3 class="sec-tit" id="sec-adv">Adversário</h3>
+        <div class="seg seg-wrap" id="op-adv" role="group" aria-labelledby="sec-adv">
+          <button class="seg-btn" type="button" data-v="robo">Robô</button>
+          <button class="seg-btn" type="button" data-v="humano">Dois jogadores</button>
+        </div>
+        <div id="bloco-nivel">
+          <h3 class="sec-tit" id="sec-nivel">Nível do robô</h3>
+          <div class="seg seg-niveis" id="op-nivel" role="group" aria-labelledby="sec-nivel">
+            <button class="seg-btn" type="button" data-v="1">Fácil</button>
+            <button class="seg-btn" type="button" data-v="2">Médio</button>
+            <button class="seg-btn" type="button" data-v="3">Difícil</button>
+          </div>
+          <p class="nivel-nome" id="nivel-desc"></p>
+        </div>
+        <h3 class="sec-tit" id="sec-fim">Duração</h3>
+        <div class="seg seg-wrap" id="op-fim" role="group" aria-labelledby="sec-fim">
+          <button class="seg-btn" type="button" data-v="1">Um quadro</button>
+          <button class="seg-btn" type="button" data-v="3">Melhor de 3</button>
+          <button class="seg-btn" type="button" data-v="5">Melhor de 5</button>
+        </div>
+        <h3 class="sec-tit" id="sec-cac">Caçapas</h3>
+        <div class="seg seg-wrap" id="op-cac" role="group" aria-labelledby="sec-cac">
+          <button class="seg-btn" type="button" data-v="1">Oficiais</button>
+          <button class="seg-btn" type="button" data-v="1.2">Largas</button>
+        </div>
+        <p class="aviso-modal" id="aviso-partida"></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" type="button" id="partida-jogar" data-foco>Jogar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal "Efeito na bola" -->
+  <div id="efeito-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="efeito-title">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h2 id="efeito-title">Efeito na bola branca</h2>
+        <button class="modal-x" type="button" aria-label="Fechar" data-fechar>✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="aviso-modal">Toque no ponto da bola onde o taco vai bater. Em cima, a bola corre depois do choque. Embaixo, ela volta. Nas laterais, ela gira de lado e muda o ângulo nas tabelas.</p>
+        <div id="efeito-caixa"><canvas id="efeito-cv" width="220" height="220" aria-label="Face da bola branca, toque para escolher o ponto"></canvas></div>
+        <p class="aviso-modal" id="efeito-txt">Ponto central</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" type="button" id="efeito-zerar">Centralizar</button>
+        <button class="btn btn-primary" type="button" data-fechar data-foco>Pronto</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section id="game-area" aria-label="Mesa e controles">
+      <button id="modo-btn" type="button" aria-haspopup="dialog" data-abrir="partida-modal">
+        <span id="modo-mini" aria-hidden="true"></span>
+        <span class="modo-txt"><span class="nivel-rotulo">Partida</span><b id="modo-nome">Sinuca Brasileira</b><span id="modo-sub"></span></span>
+        <span class="modo-trocar"><span class="trocar-txt">Trocar</span><span class="ic" id="modo-chevron"></span></span>
+      </button>
+
+      <div id="hud">
+        <div class="hud-box"><span class="hud-label" id="hud-l1">Da vez</span><b id="hud-v1">1</b></div>
+        <div class="hud-box"><span class="hud-label" id="hud-l2">Placar</span><b id="hud-v2">0 x 0</b></div>
+        <div class="hud-box"><span class="hud-label" id="hud-l3">Limite</span><b id="hud-v3">-</b></div>
+        <div class="hud-box"><span class="hud-label" id="hud-l4">Quadros</span><b id="hud-v4">0 x 0</b></div>
+      </div>
+
+      <div id="mesa-box">
+        <canvas id="mesa" role="img" aria-label="Mesa de sinuca" tabindex="0"></canvas>
+        <canvas id="taco" aria-hidden="true"></canvas>
+        <div id="tela" hidden>
+          <div class="tela-card" role="dialog" aria-live="polite">
+            <h2 id="tela-titulo"></h2>
+            <div id="tela-corpo"></div>
+            <button id="tela-btn" class="btn btn-primary" type="button">Continuar</button>
+            <button id="tela-btn2" class="btn btn-secondary" type="button" hidden>Ver a mesa</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="entrada">
+        <p id="dica"></p>
+        <div id="painel-acao">
+          <div class="linha-mira">
+            <button class="mini-btn mira-btn" id="mira-menos" type="button" aria-label="Mirar um pouco mais para a esquerda do taco">&minus;</button>
+            <label class="slider-rot" for="mira-fina"><span class="rotulo-cfg">Mira fina</span>
+              <input id="mira-fina" type="range" min="-5" max="5" step="0.05" value="0" /></label>
+            <button class="mini-btn mira-btn" id="mira-mais" type="button" aria-label="Mirar um pouco mais para a direita do taco">+</button>
+          </div>
+          <div class="linha-forca">
+            <label class="slider-rot" for="forca"><span class="rotulo-cfg">Força <b id="forca-txt">Média</b></span>
+              <input id="forca" type="range" min="0" max="100" step="0.5" value="40" /></label>
+            <button class="tool-btn" id="efeito-btn" type="button" aria-haspopup="dialog" data-abrir="efeito-modal"><span>Efeito</span><small id="efeito-mini">Centro</small></button>
+          </div>
+          <div class="par-btns">
+            <button id="tacar-btn" class="btn btn-primary" type="button">Tacar</button>
+          </div>
+        </div>
+        <div class="ferramentas" id="ferramentas">
+          <button id="empurrar-btn" class="tool-btn" type="button" aria-pressed="false" hidden>Empurrada</button>
+          <button id="desistir-btn" class="tool-btn" type="button" hidden>Desistir do quadro</button>
+        </div>
+      </div>
+
+      <div id="message-container"><div id="message-area" role="status" aria-live="polite"></div></div>
+
+      <div id="placar">
+        <div class="grupo-frota"><span class="grupo-tit" id="gp-jog">Jogadores</span><div class="chips" id="chips-jog" role="list" aria-labelledby="gp-jog"></div></div>
+        <div class="grupo-frota"><span class="grupo-tit" id="gp-diario">Últimas jogadas</span><ul id="diario" aria-labelledby="gp-diario"></ul></div>
+      </div>
+
+      <button id="restart-btn" class="btn btn-primary" type="button">Nova partida</button>
+
+      <div id="config" aria-label="Ajudas">
+        <div class="acc" id="acc-ajuda">
+          <button class="acc-btn" id="ajuda-btn" type="button" aria-expanded="false" aria-controls="ajuda-painel">
+            <span class="opc-txt"><span class="nivel-rotulo">Ajudas</span><b id="ajuda-atual">Guia de mira: linha</b></span>
+            <span class="ic" id="ajuda-chevron"></span>
+          </button>
+          <div class="acc-panel" id="ajuda-painel" role="region" aria-labelledby="ajuda-btn">
+            <div>
+              <div class="linha-cfg">
+                <span class="rotulo-cfg">Guia de mira</span>
+                <div id="op-guia" class="seg" role="group" aria-label="Guia de mira">
+                  <button class="seg-btn" type="button" data-v="nenhum">Nenhum</button>
+                  <button class="seg-btn" type="button" data-v="linha">Linha</button>
+                  <button class="seg-btn" type="button" data-v="completo">Completo</button>
+                </div>
+              </div>
+              <div class="linha-cfg">
+                <span class="rotulo-cfg">Animação</span>
+                <div id="op-vel" class="seg" role="group" aria-label="Velocidade da animação das tacadas">
+                  <button class="seg-btn" type="button" data-v="real">Tempo real</button>
+                  <button class="seg-btn" type="button" data-v="normal">Normal</button>
+                  <button class="seg-btn" type="button" data-v="rapido">Rápida</button>
+                </div>
+              </div>
+              <p id="ajuda-aviso">O guia mostra onde a bola branca bate e para onde a bola alvo vai. Toque na mesa para pular a animação. As ajudas valem na hora e ficam salvas neste aparelho.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p class="assinatura-final">© Christian, 2026</p>
+  </footer>
+</body>
+</html>
